@@ -112,4 +112,4 @@ while [ $# -gt 0 ]; do
 done
 
 
-docker exec mongodb sh -c "mongodump --authenticationDatabase admin -u $DB_USER -p $DB_PASSWD --db $DB_NAME --archive" > "~/mogodump/$TAG_NAME-$DB_NAME-$TIMESTAMP.dump"
+docker exec mongodb sh -c "mongodump --authenticationDatabase admin -u $DB_USER -p $DB_PASSWD --db $DB_NAME --archive" > "~/dumped/$TAG_NAME-$DB_NAME-$TIMESTAMP.dump"
