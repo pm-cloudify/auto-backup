@@ -6,20 +6,18 @@ usage() {
 
     cat <<EOF
 Usage: $0 [OPTIONS]
-    -h, --help          Show help
-    -u, --user          Sets username
-    -p, --password      Sets password
-    -d, --database      Sets database
-    -t, --tag           Sets a dag at the begging of dumped file, default is: "app"
+    -h,   --help          Show help
+    -u,   --user          Sets username
+    -p,   --password      Sets password
+    --db, --database    Sets database
+    -t,   --tag           Sets a dag at the begging of dumped file, default is: "app"
 EOF
 }
 
-TIMESTAMP=$(date +'%Y-%m-%d %H:%M:%S')
 DB_USER=""
 DB_PASSWD=""
 DB_NAME=""
 TAG_NAME="app"
-
 
 # **** ref: This is a builtin feature to create POSIX-compatible cli
 # Parse options
@@ -71,9 +69,9 @@ while [ $# -gt 0 ]; do
             DB_PASSWD=$2; shift 2
         ;;
         # set database
-        -d)
+        --db)
             if [ $# -lt 2 ]; then
-                printf 'Error -d required an argument' ; exit 1
+                printf 'Error --db required an argument' ; exit 1
             fi
             DB_NAME=$2; shift 2
         ;;
@@ -113,19 +111,24 @@ done
 
 echo "$DB_NAME-$DB_PASSWD-$DB_USER"
 
-if [ "$DB_USER" == "" ]; then
-        echo "user is required!"
+if [ -z "$DB_USER" ]; then
+        printf '%s\n' "user is required!" >&2
         exit 1
 fi
 
-if [ "$DB_PASSWD" ==  "" ]; then
-        echo "password is required!"
+if [ -z "$DB_PASSWD" ]; then
+        printf '%s\n' "password is required!" >&2
         exit 1
 fi
 
-if [ "$DB_NAME" == "" ]; then
-        echo "database is required!"
+if [ -z "$DB_NAME" ]; then
+        printf '%s\n' "database is required!" >&2
         exit 1
 fi
 
-docker exec mongodb sh -c "mongodump --authenticationDatabase admin -u $DB_USER -p $DB_PASSWD --db $DB_NAME --archive" > "~/dumped/$TAG_NAME-$DB_NAME-$TIMESTAMP.dump"
+
+TIMESTAMP=$(date +'%Y%m%d-%H%M%S')
+mkdir -p "$HOME/dumped"
+outfile="$HOME/dumped/${TAG_NAME}-${DB_NAME}-${TIMESTAMP}.dump"
+
+docker exec mongodb sh -c "mongodump --authenticationDatabase admin -u '$DB_USER' -p '$DB_PASSWD' --db '$DB_NAME' --archive" > "$outfile"
