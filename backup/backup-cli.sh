@@ -18,7 +18,7 @@ TIMESTAMP=$(date +'%Y-%m-%d %H:%M:%S')
 DB_USER=""
 DB_PASSWD=""
 DB_NAME=""
-TAG_NAME=""
+TAG_NAME="app"
 
 
 # **** ref: This is a builtin feature to create POSIX-compatible cli
@@ -43,10 +43,10 @@ while [ $# -gt 0 ]; do
             if [ $# -lt 2 ]; then
                 printf 'Error -u required an argument' ; exit 1
             fi
-            DB_USER=$2; shift
+            DB_USER=$2; shift 2
         ;;
         --user=*)
-            DB_USER=${1#--user=}; shift
+            DB_USER=${1#--user=}; shift 2
         ;;
         --user)
             if [ $# -lt 2 ]; then
@@ -59,10 +59,10 @@ while [ $# -gt 0 ]; do
             if [ $# -lt 2 ]; then
                 printf 'Error -p required an argument' ; exit 1
             fi
-            DB_PASSWD=$2; shift
+            DB_PASSWD=$2; shift 2
         ;;
         --password=*)
-            DB_PASSWD=${1#--password=}; shift
+            DB_PASSWD=${1#--password=}; shift 2
         ;;
         --password)
             if [ $# -lt 2 ]; then
@@ -75,10 +75,10 @@ while [ $# -gt 0 ]; do
             if [ $# -lt 2 ]; then
                 printf 'Error -d required an argument' ; exit 1
             fi
-            DB_NAME=$2; shift
+            DB_NAME=$2; shift 2
         ;;
         --database=*)
-            DB_NAME=${1#--database=}; shift
+            DB_NAME=${1#--database=}; shift 2
         ;;
         --database)
             if [ $# -lt 2 ]; then
@@ -91,10 +91,10 @@ while [ $# -gt 0 ]; do
             if [ $# -lt 2 ]; then
                 printf 'Error -t required an argument' ; exit 1
             fi
-            TAG_NAME=$2; shift
+            TAG_NAME=$2; shift 2
         ;;
         --tag=*)
-            TAG_NAME=${1#--tag=}; shift
+            TAG_NAME=${1#--tag=}; shift 2
         ;;
         --tag)
             if [ $# -lt 2 ]; then
@@ -111,5 +111,21 @@ while [ $# -gt 0 ]; do
     esac
 done
 
+echo "$DB_NAME-$DB_PASSWD-$DB_USER"
+
+if [ "$DB_USER" == "" ]; then
+        echo "user is required!"
+        exit 1
+fi
+
+if [ "$DB_PASSWD" ==  "" ]; then
+        echo "password is required!"
+        exit 1
+fi
+
+if [ "$DB_NAME" == "" ]; then
+        echo "database is required!"
+        exit 1
+fi
 
 docker exec mongodb sh -c "mongodump --authenticationDatabase admin -u $DB_USER -p $DB_PASSWD --db $DB_NAME --archive" > "~/dumped/$TAG_NAME-$DB_NAME-$TIMESTAMP.dump"
