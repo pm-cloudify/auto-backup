@@ -109,8 +109,6 @@ while [ $# -gt 0 ]; do
     esac
 done
 
-echo "$DB_NAME-$DB_PASSWD-$DB_USER"
-
 if [ -z "$DB_USER" ]; then
         printf '%s\n' "user is required!" >&2
         exit 1
@@ -131,4 +129,25 @@ TIMESTAMP=$(date +'%Y%m%d-%H%M%S')
 mkdir -p "$HOME/dumped"
 outfile="$HOME/dumped/${TAG_NAME}-${DB_NAME}-${TIMESTAMP}.dump"
 
-docker exec mongodb sh -c "mongodump --authenticationDatabase admin -u '$DB_USER' -p '$DB_PASSWD' --db '$DB_NAME' --archive" > "$outfile"
+tmp_err=$(mktemp)
+
+docker exec mongodb sh -c "mongodump --authenticationDatabase admin -u '$DB_USER' -p '$DB_PASSWD' --db '$DB_NAME' --archive" > "$outfile" 2> "$tmp_err"
+rc=$?
+
+if [ "$rc" -ne 0 ]; then
+  echo "mongodump failed (exit $rc). Error output:" >&2
+  sed 's/^/  /' "$tmp_err" >&2
+  rm -f "$tmp_err"
+  exit "$rc"
+fi
+
+if [ ! -s "$outfile" ]; then
+  echo "mongodump reported success but output file is empty: $outfile" >&2
+  echo "stderr was:" >&2
+  sed 's/^/  /' "$tmp_err" >&2
+  rm -f "$tmp_err"
+  exit 2
+fi
+
+echo "Dump succeeded, file: $outfile"
+rm -f "$tmp_err"
