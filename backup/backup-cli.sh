@@ -109,6 +109,8 @@ while [ $# -gt 0 ]; do
     esac
 done
 
+# TODO: add a feature to add these options safely here.
+
 if [ -z "$DB_USER" ]; then
         printf '%s\n' "user is required!" >&2
         exit 1
