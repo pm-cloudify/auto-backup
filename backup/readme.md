@@ -15,7 +15,7 @@ crontab -e
 
 then add this cron job:
 
-    0 */12 * * * /usr/local/bin/mongo-backup -u root -p password --db test -t todo > ~/todos-backup.log
+    0 */12 * * * /usr/local/bin/mongo-backup -u root -p password --db test -t todo >> ~/todos-backup.log
 
 it backups every 12 hours.
 
